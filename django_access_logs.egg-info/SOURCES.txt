@@ -1,0 +1,11 @@
+README.rst
+setup.py
+access_logs/__init__.py
+access_logs/admin.py
+access_logs/models.py
+access_logs/tasks.py
+django_access_logs.egg-info/PKG-INFO
+django_access_logs.egg-info/SOURCES.txt
+django_access_logs.egg-info/dependency_links.txt
+django_access_logs.egg-info/requires.txt
+django_access_logs.egg-info/top_level.txt

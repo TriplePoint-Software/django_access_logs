@@ -1,0 +1,21 @@
+Metadata-Version: 1.1
+Name: django-access-logs
+Version: 0.1
+Summary: A simple module to record server access logs in DB and export them
+Home-page: https://github.com/AssuraGroup/django-access-logs
+Author: Jai
+Author-email: jaivikram.verma@gmail.com
+License: Apache 2.0 License
+Description: A simple module to record server access logs in DB and export them
+        
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache 2.0 License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
