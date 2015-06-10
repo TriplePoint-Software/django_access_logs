@@ -1,6 +1,0 @@
-django-constance
-ua-parser
-django-import-export
-python-dateutil
-celery
-django-celery
