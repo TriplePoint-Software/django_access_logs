@@ -14,6 +14,7 @@
 
     ``django-celery >= 3.1.16``
     
+*If you are using Django < 1.7. Use the Django_lt_1.7 branch and install* ``south``    
 
 **Settings Required**
 
