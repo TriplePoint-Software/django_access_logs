@@ -10,7 +10,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='django_access_logs',
     version='0.1.1',
-    packages=['access_logs'],
+    packages=['access_logs', 'access_logs.migrations'],
     include_package_data=True,
     license='Apache License, Version 2.0', 
     description='A simple module to record server access logs in DB and export them',
