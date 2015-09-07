@@ -37,5 +37,6 @@ setup(
         'python-dateutil>=2.4.2',
         'celery>=3.1.18', 
         'django-celery>=3.1.16', 
+        'South>=0.7.6'
         ],
 )
