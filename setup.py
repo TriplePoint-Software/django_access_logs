@@ -4,12 +4,14 @@ from setuptools import setup
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     README = readme.read()
 
+__version__ = "0.1.2"
+
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django_access_logs',
-    version='0.1.2',
+    version=__version__,
     packages=['access_logs', 'access_logs.migrations'],
     include_package_data=True,
     license='Apache License, Version 2.0', 
@@ -30,12 +32,13 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    install_requires = [
-        'django-constance>=0.6', 
-        'ua-parser>=0.3.6', 
-        'django-import-export>=0.2.7', 
+    install_requires=[
+        'celery>=3.1.18',
+        'django-celery>=3.1.16',
+        'django-import-export>=0.2.7',
+        'django-solo>=1.1.2',
+        'django>=1.7,<1.10',
         'python-dateutil>=2.4.2',
-        'celery>=3.1.18', 
-        'django-celery>=3.1.16', 
-        ],
+        'ua-parser>=0.3.6',
+    ],
 )

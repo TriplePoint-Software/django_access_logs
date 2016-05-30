@@ -1,6 +1,7 @@
 import datetime
-import pytz
 
+import import_export
+import pytz
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -8,15 +9,22 @@ from django.contrib.admin import SimpleListFilter
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
-
-from constance import config
-import import_export
 from import_export import admin as import_export_admin
-from import_export import forms as import_export_forms
 from import_export import fields, resources
+from import_export import forms as import_export_forms
+from solo.admin import SingletonModelAdmin
 
-from .models import AccessLog
+from .models import AccessLog, AccessLogConfiguration
 
+
+def make_tz_aware(dt, tz='UTC', is_dst=None):
+    """Add timezone information to a datetime object, only if it is naive."""
+    tz = dt.tzinfo or tz
+    try:
+        tz = pytz.timezone(tz)
+    except AttributeError:
+        pass
+    return tz.localize(dt, is_dst=is_dst)
 
 class AccessLogResource(resources.ModelResource):
     user_agent_raw = fields.Field()
@@ -28,7 +36,7 @@ class AccessLogResource(resources.ModelResource):
                         'request_time', 'upstream_response_time', 'pipe')
 
     def dehydrate_timestamp(self, access_log):
-        return access_log.timestamp.astimezone(pytz.timezone(settings.TIME_ZONE)).strftime("%m/%d/%y %H:%M:%S")
+        return make_tz_aware(access_log.timestamp, settings.TIME_ZONE).strftime("%m/%d/%y %H:%M:%S")
 
     def dehydrate_user_agent(self, access_log):
         return access_log.user_agent_display()
@@ -49,9 +57,8 @@ class CustomExportForm(import_export_forms.ExportForm):
 
     def __init__(self, formats, *args, **kwargs):
         super(CustomExportForm, self).__init__(formats, *args, **kwargs)
-        self.fields['status'].choices = [('', 'All')] + \
-                                        [(e, e) for e in
-                                         AccessLog.objects.order_by().values_list('status', flat=True).distinct()]
+        status_list = AccessLog.objects.order_by().values_list('status', flat=True).distinct()
+        self.fields['status'].choices = [('', 'All')] + [(e, e) for e in status_list]
 
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
@@ -72,49 +79,63 @@ class CustomExportMixin(import_export_admin.ExportMixin):
         # http://stackoverflow.com/questions/5220433/how-to-edit-filters-list-of-a-queryset
         # http://stackoverflow.com/questions/4689566/django-remove-a-filter-condition-from-a-queryset
         # need to manipulate the request.GET multidict
-        get_params = request.GET.copy()
-        for field_name, param in [('start_date', 'timestamp__gte'), ('end_date', 'timestamp__lt'),
-                                  ('status', 'status')]:
-            if cleaned_data.get(field_name) is not None and get_params.get(param):
-                get_params.pop(param)
-        req = HttpRequest()
-        req.GET = get_params
-        queryset = super(CustomExportMixin, self).get_export_queryset(req)
+        GET = request.GET.copy()
+        export_params = [('start_date', 'timestamp__gte'), ('end_date', 'timestamp__lt'), ('status', 'status')]
+        for field_name, param in export_params:
+            if cleaned_data.get(field_name) is not None and GET.get(param):
+                GET.pop(param)
+        request = HttpRequest()
+        request.GET = GET
+        queryset = super(CustomExportMixin, self).get_export_queryset(request)
+
         if cleaned_data.get('start_date'):
             queryset = queryset.filter(timestamp__gte=cleaned_data['start_date'])
+
         if cleaned_data.get('end_date'):
             end_timestamp = datetime.datetime.combine(cleaned_data['end_date'], datetime.time.max)
             queryset = queryset.filter(timestamp__lte=end_timestamp)
+
         if cleaned_data.get('status'):
             queryset = queryset.filter(status=cleaned_data['status'])
+
+        config = AccessLogConfiguration.objects.get()
         if cleaned_data.get('filter_bots'):
-            user_agent_iregex = '(' + '|'.join([uas.strip() for uas in config.USER_AGENT_BOT_LIST.strip().split(',')]) \
-                                + ')'
+            config_agents = config.user_agent_bot_list.strip().split(',')
+            user_agent_iregex = '(' + '|'.join([uas.strip() for uas in config_agents]) + ')'
             queryset = queryset.exclude(Q(user_agent__iregex=r'(%s)' % user_agent_iregex) | Q(user_agent='-'))
+
         if cleaned_data.get('filter_admin_ips'):
             start_date = datetime.datetime.today() - datetime.timedelta(days=int(cleaned_data['filter_admin_ips']))
+
             admin_ips = set(AccessLog.objects.filter(timestamp__gt=start_date, request__istartswith='/admin')
                             .values_list('remote_host', flat=True))
-            excluded_ips = [ip.strip() for ip in config.ACCESS_LOG_EXPORT_EXCLUDED_IPS.strip().split(',')] \
-                           + list(admin_ips)
+            config_excluded_ips = config.access_log_export_excluded_ips.strip().split(',')
+            excluded_ips = [ip.strip() for ip in config_excluded_ips] + list(admin_ips)
             queryset = queryset.exclude(remote_host__in=excluded_ips)
         return queryset
 
     def export_action(self, request, *args, **kwargs):
         formats = self.get_export_formats()
+
+        start_date = None
+        if request.GET.get('timestamp__gte'):
+            start_date = datetime.datetime.strptime(request.GET['timestamp__gte'].split(' ')[0], '%Y-%m-%d')
+
+        end_data = None
+        if request.GET.get('timestamp__lt'):
+            end_data = datetime.datetime.strptime(request.GET['timestamp__lt'].split(' ')[0], '%Y-%m-%d')
+
+        status = request.GET.get('status', None) or None
+
         initial_data = {
-            'start_date': datetime.datetime.strptime(request.GET['timestamp__gte'].split(' ')[0], '%Y-%m-%d')
-            if request.GET.get('timestamp__gte') else None,
-            'end_date': datetime.datetime.strptime(request.GET['timestamp__lt'].split(' ')[0], '%Y-%m-%d')
-            if request.GET.get('timestamp__lt') else None,
-            'status': request.GET['status'] if request.GET.get('status') else None
+            'start_date': start_date,
+            'end_date': end_data,
+            'status': status
         }
 
         form = CustomExportForm(formats, request.POST or None, initial=initial_data)
         if form.is_valid():
-            file_format = formats[
-                int(form.cleaned_data['file_format'])
-            ]()
+            file_format = formats[int(form.cleaned_data['file_format'])]()
 
             queryset = self.get_export_queryset(request, cleaned_data=form.cleaned_data)
             export_data = self.get_export_data(file_format, queryset)
@@ -129,13 +150,15 @@ class CustomExportMixin(import_export_admin.ExportMixin):
             )
             return response
 
-        context = {}
-        context['form'] = form
+        context = {
+            'form': form,
+            'opts': self.model._meta,
+        }
+
         if request.GET.get('q'):
             context['search_term'] = request.GET.get('q')
-        context['opts'] = self.model._meta
-        return TemplateResponse(request, [self.export_template_name],
-                                context, current_app=self.admin_site.name)
+
+        return TemplateResponse(request, [self.export_template_name], context, current_app=self.admin_site.name)
 
 
 class HTTPMethodListFilter(SimpleListFilter):
@@ -165,6 +188,9 @@ class AccessLogAdmin(CustomExportMixin, admin.ModelAdmin):
 
     class Media:
         js = ('js/list_filter_collapse.js',)
-
-
 admin.site.register(AccessLog, AccessLogAdmin)
+
+
+admin.site.register(AccessLogConfiguration, SingletonModelAdmin)
+
+
