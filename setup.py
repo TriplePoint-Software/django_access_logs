@@ -1,9 +1,6 @@
 import os
 from setuptools import setup
 
-with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
-    README = readme.read()
-
 __version__ = "0.1.3"
 
 # allow setup.py to be run from any path
@@ -14,9 +11,10 @@ setup(
     version=__version__,
     packages=['access_logs', 'access_logs.migrations'],
     include_package_data=True,
-    license='Apache License, Version 2.0', 
+    license='Apache License, Version 2.0',
     description='A simple module to record server access logs in DB and export them',
-    long_description=README,
+    long_description="A simple reusable Django app to record parsed server access logs "
+                     "in a database and export them as CSV on demand",
     url='https://github.com/TriplePoint-Software/django_access_logs',
     author='Jai',
     author_email='jaivikram.verma@gmail.com',
