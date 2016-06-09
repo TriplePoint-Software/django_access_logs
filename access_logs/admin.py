@@ -184,10 +184,26 @@ class AccessLogAdmin(CustomExportMixin, admin.ModelAdmin):
     search_fields = ['timestamp', 'bytes_sent', 'referer',
                      'request', 'remote_host', 'status',
                      'user_agent']
+
+    list_display_links = None
     resource_class = AccessLogResource
 
     class Media:
         js = ('js/list_filter_collapse.js',)
+
+    def has_change_permission(self, request, obj=None):
+        return obj is None
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_save_permission(self, *args):
+        return False
+
+    def has_delete_permission(self, *args):
+        return False
+
+
 admin.site.register(AccessLog, AccessLogAdmin)
 
 
