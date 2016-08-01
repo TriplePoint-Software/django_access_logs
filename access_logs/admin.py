@@ -26,6 +26,7 @@ def make_tz_aware(dt, tz='UTC', is_dst=None):
         pass
     return tz.localize(dt, is_dst=is_dst)
 
+
 class AccessLogResource(resources.ModelResource):
     user_agent_raw = fields.Field()
 
@@ -185,14 +186,23 @@ class AccessLogAdmin(CustomExportMixin, admin.ModelAdmin):
                      'request', 'remote_host', 'status',
                      'user_agent']
 
-    list_display_links = None
     resource_class = AccessLogResource
+    actions = None
 
     class Media:
         js = ('js/list_filter_collapse.js',)
 
     def has_change_permission(self, request, obj=None):
-        return obj is None
+        return obj is None or request.method == 'GET'
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save'] = False
+        extra_context['save_as'] = False
+        extra_context['add'] = False
+
+        return super(AccessLogAdmin, self).change_view(request, object_id, extra_context=extra_context)
 
     def has_add_permission(self, request):
         return False
@@ -205,8 +215,6 @@ class AccessLogAdmin(CustomExportMixin, admin.ModelAdmin):
 
 
 admin.site.register(AccessLog, AccessLogAdmin)
-
-
 admin.site.register(AccessLogConfiguration, SingletonModelAdmin)
 
 
