@@ -99,7 +99,7 @@ class CustomExportMixin(import_export_admin.ExportMixin):
         if cleaned_data.get('status'):
             queryset = queryset.filter(status=cleaned_data['status'])
 
-        config = AccessLogConfiguration.objects.get()
+        config = AccessLogConfiguration.get_solo()
         if cleaned_data.get('filter_bots'):
             config_agents = config.user_agent_bot_list.strip().split(',')
             user_agent_iregex = '(' + '|'.join([uas.strip() for uas in config_agents]) + ')'
