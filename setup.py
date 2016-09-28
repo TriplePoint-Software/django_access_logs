@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
