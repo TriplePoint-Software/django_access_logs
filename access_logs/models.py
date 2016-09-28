@@ -48,7 +48,7 @@ BOT_LIST = ['cloudflare', 'twiceler', 'yahooseeker', 'chtml', 'generic', 'heritr
             'Icarus6j', 'PagePeeker', '^vortex', 'Sogou', '^Java/', 'BlogBridge', 'ZooShot', 'indexer', 'GomezAgent',
             '^JNLP/', '^NING', 'WinHTTP', 'TLSProber', 'Squrl Java',
             'NewsGator', 'Google-HTTP-Java-Client', 'Reaper', 'WhatWeb', 'crawl', 'facebookexternalhit',
-            'Python-urllib', 'IlTrovatore-Setaccio', 'AppEngine-Google',
+            'Python-urllib', 'IlTrovatore-Setaccio', 'AppEngine-Google', 'GoogleStackdriverMonitoring',
             'InternetArchive', 'WordPress', 'Retreiver']
 
 
