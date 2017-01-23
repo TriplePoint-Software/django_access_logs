@@ -159,7 +159,7 @@ class CustomExportMixin(import_export_admin.ExportMixin):
         if request.GET.get('q'):
             context['search_term'] = request.GET.get('q')
 
-        return TemplateResponse(request, [self.export_template_name], context, current_app=self.admin_site.name)
+        return TemplateResponse(request, [self.export_template_name], context)
 
 
 class HTTPMethodListFilter(SimpleListFilter):

@@ -7,7 +7,7 @@ celery>=3.1.18
 django-celery>=3.1.16
 django-import-export>=0.2.7
 django-solo>=1.1.2
-django>=1.7,<1.10
+django>=1.10,<1.11
 python-dateutil>=2.4.2
 ua-parser>=0.3.6
 ```

@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-__version__ = "0.1.9"
+__version__ = "0.1.10"
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
@@ -35,7 +35,7 @@ setup(
         'django-celery>=3.1.16',
         'django-import-export>=0.2.7',
         'django-solo>=1.1.2',
-        'django>=1.7,<1.10',
+        'django>=1.10,<1.11',
         'python-dateutil>=2.4.2',
         'ua-parser>=0.3.6',
     ],
